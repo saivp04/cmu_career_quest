@@ -1,0 +1,552 @@
+import React, { useState, useEffect } from 'react';
+import { Upload, Sparkles, BookOpen, Target, TrendingUp, Award, AlertCircle, Zap, Star, Trophy, Flame, Plus, CheckCircle, Lock, History, Save, Download, ArrowUp, PartyPopper, Rocket, Brain } from 'lucide-react';
+
+const CMUCoursePlanner = () => {
+  const [file, setFile] = useState(null);
+  const [jobUrl, setJobUrl] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [analysis, setAnalysis] = useState(null);
+  const [careerPath, setCareerPath] = useState('');
+  const [activeTab, setActiveTab] = useState('courses');
+  const [coins, setCoins] = useState(0);
+  const [level, setLevel] = useState(1);
+  const [streak, setStreak] = useState(0);
+  const [xp, setXp] = useState(0);
+  const [showAchievement, setShowAchievement] = useState(null);
+  const [completedQuickWins, setCompletedQuickWins] = useState([]);
+  const [resumeHistory, setResumeHistory] = useState([]);
+  const [achievements, setAchievements] = useState([
+    { id: 1, name: 'First Upload', icon: '🌟', unlocked: false, reward: 100 },
+    { id: 2, name: 'Perfect Score', icon: '💯', unlocked: false, reward: 500 },
+    { id: 3, name: 'Course Master', icon: '🎓', unlocked: false, reward: 300 },
+    { id: 4, name: 'Job Hunter', icon: '🎯', unlocked: false, reward: 200 },
+    { id: 5, name: 'Quick Win Streak', icon: '⚡', unlocked: false, reward: 250 },
+    { id: 6, name: 'Resume Pro', icon: '📄', unlocked: false, reward: 150 }
+  ]);
+
+  const careerPaths = [
+    'Machine Learning Engineer',
+    'Software Engineer',
+    'Data Scientist',
+    'AI Research Scientist',
+    'Full Stack Developer',
+    'Systems Engineer',
+    'Robotics Engineer',
+    'Security Engineer',
+    'Cloud Architect',
+    'DevOps Engineer',
+    'Computer Vision Engineer',
+    'NLP Engineer',
+    'Blockchain Developer',
+    'Quantum Computing Researcher',
+    'Computational Biology Scientist',
+    'Hardware Engineer'
+  ];
+
+  const [dailyChallenges, setDailyChallenges] = useState([
+    { id: 1, title: 'Upload Your Resume', reward: 50, completed: false, icon: '📄' },
+    { id: 2, title: 'Match With 3 Jobs', reward: 100, completed: false, icon: '🎯' },
+    { id: 3, title: 'Complete One Course', reward: 150, completed: false, icon: '📚' },
+    { id: 4, title: 'Improve ATS Score by 10%', reward: 200, completed: false, icon: '📈' }
+  ]);
+
+  const xpToNextLevel = level * 1000;
+  const xpProgress = (xp / xpToNextLevel) * 100;
+
+  useEffect(() => {
+    if (xp >= xpToNextLevel) {
+      levelUp();
+    }
+  }, [xp, xpToNextLevel]);
+
+  const levelUp = () => {
+    setLevel(level + 1);
+    setXp(0);
+    triggerAchievement({ name: `Level ${level + 1} Reached!`, icon: '🎉', reward: level * 100 });
+  };
+
+  const triggerAchievement = (achievement) => {
+    setShowAchievement(achievement);
+    setCoins(prev => prev + achievement.reward);
+    setTimeout(() => setShowAchievement(null), 3000);
+  };
+
+  const handleFileUpload = (e) => {
+    const uploadedFile = e.target.files[0];
+    if (uploadedFile && uploadedFile.type === 'application/pdf') {
+      const newResume = {
+        id: Date.now(),
+        name: uploadedFile.name,
+        uploadDate: new Date().toLocaleDateString(),
+        score: 0,
+        changes: []
+      };
+      setFile(uploadedFile);
+      setResumeHistory([newResume, ...resumeHistory]);
+      addXP(50);
+      setCoins(prev => prev + 50);
+
+      if (!achievements[0].unlocked) {
+        const newAchievements = [...achievements];
+        newAchievements[0].unlocked = true;
+        setAchievements(newAchievements);
+        triggerAchievement(newAchievements[0]);
+      }
+    }
+  };
+
+  const addXP = (amount) => {
+    setXp(prev => prev + amount);
+  };
+
+  const completeQuickWin = (action, points) => {
+    if (completedQuickWins.includes(action)) return;
+
+    setCompletedQuickWins([...completedQuickWins, action]);
+    const pointsNum = parseInt(points);
+    addXP(pointsNum * 10);
+    setCoins(prev => prev + pointsNum);
+
+    if (analysis) {
+      const newAnalysis = { ...analysis };
+      newAnalysis.matchScores.overall = Math.min(100, newAnalysis.matchScores.overall + Math.floor(pointsNum / 10));
+      newAnalysis.matchScores.atsScore = Math.min(100, newAnalysis.matchScores.atsScore + Math.floor(pointsNum / 8));
+      setAnalysis(newAnalysis);
+    }
+  };
+
+  const analyzeResumeAndJob = async () => {
+    if (!file || !careerPath) {
+      alert('Please upload a resume and select a career path');
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      await new Promise(resolve => setTimeout(resolve, 2500));
+
+      const mockAnalysis = {
+        studentProfile: {
+          name: 'Alex Chen',
+          completedCourses: [
+            '15213 - Intro to Computer Systems',
+            '10301 - Introduction to Machine Learning',
+            '15210 - Data Structures and Algorithms'
+          ],
+          skills: ['Python', 'Java', 'TensorFlow', 'React', 'AWS'],
+          experience: 'Software Engineering Intern at Tech Corp',
+          year: 'Junior',
+          major: 'Computer Science'
+        },
+        matchScores: {
+          overall: 78,
+          technical: 82,
+          courseAlignment: 75,
+          industryRelevance: 80,
+          atsScore: 74
+        },
+        jobMatch: {
+          title: 'Machine Learning Engineer',
+          company: 'TechCorp AI',
+          matchPercentage: 78,
+          missingSkills: ['PyTorch', 'Docker', 'Kubernetes', 'MLOps', 'Spark'],
+          matchingSkills: ['Python', 'TensorFlow', 'Machine Learning', 'Git', 'Linux']
+        },
+        recommendations: {
+          quickWins: [
+            { action: 'Add PyTorch to skills section', points: 8, category: 'technical' },
+            { action: 'Complete 10707 Advanced Deep Learning', points: 12, category: 'course' },
+            { action: 'Add Docker and Kubernetes projects', points: 10, category: 'technical' },
+            { action: 'Quantify ML project impact with metrics', points: 6, category: 'ats' }
+          ],
+          courses: [
+            { id: '10707', name: 'Advanced Deep Learning', impact: 12, reason: 'Addresses PyTorch skill gap', priority: 'High', prereqs: ['10301'] },
+            { id: '15618', name: 'Parallel Computer Architecture', impact: 8, reason: 'ML infrastructure knowledge', priority: 'Medium', prereqs: ['15213'] }
+          ]
+        },
+        careerReadiness: 78,
+        nextLevelPoints: 200
+      };
+
+      setAnalysis(mockAnalysis);
+      addXP(100);
+      setCoins(prev => prev + 100);
+      setStreak(prev => prev + 1);
+
+      if (resumeHistory.length > 0) {
+        const updatedHistory = [...resumeHistory];
+        updatedHistory[0].score = mockAnalysis.matchScores.overall;
+        setResumeHistory(updatedHistory);
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const ScoreCard = ({ title, score, color, icon: Icon }) => (
+    <div className={`bg-gradient-to-br ${color} rounded-xl p-6 text-white transform hover:scale-105 transition-transform shadow-xl`}>
+      <div className="flex items-center justify-between mb-2">
+        <Icon className="w-8 h-8 opacity-80" />
+        <span className="text-3xl font-bold">{score}%</span>
+      </div>
+      <p className="text-sm font-medium opacity-90">{title}</p>
+      <div className="mt-3 bg-white bg-opacity-20 rounded-full h-2">
+        <div className="bg-white rounded-full h-2 transition-all duration-500" style={{ width: `${score}%` }}></div>
+      </div>
+    </div>
+  );
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 p-6">
+
+      {showAchievement && (
+        <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50 animate-bounce">
+          <div className="bg-gradient-to-r from-yellow-400 via-orange-500 to-red-500 rounded-2xl p-8 shadow-2xl border-4 border-yellow-300">
+            <div className="text-center">
+              <div className="text-8xl mb-4 animate-pulse">{showAchievement.icon}</div>
+              <h2 className="text-3xl font-bold text-white mb-2">🎉 Achievement Unlocked! 🎉</h2>
+              <p className="text-xl text-white font-semibold">{showAchievement.name}</p>
+              <div className="flex items-center justify-center mt-4">
+                <Star className="w-8 h-8 text-yellow-300 fill-yellow-300 mr-2" />
+                <span className="text-2xl font-bold text-white">+{showAchievement.reward} Coins!</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <div className="max-w-7xl mx-auto">
+        <div className="bg-gradient-to-r from-yellow-400 to-orange-500 rounded-2xl p-6 mb-6 shadow-2xl">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-6">
+              <div className="bg-white rounded-full p-4">
+                <Trophy className="w-12 h-12 text-yellow-500" />
+              </div>
+              <div>
+                <h1 className="text-3xl font-bold text-white mb-1">CMU Career Quest</h1>
+                <p className="text-white text-opacity-90">Level {level} • {streak} Day Streak 🔥</p>
+                <div className="mt-2 bg-white bg-opacity-30 rounded-full h-3 w-64">
+                  <div
+                    className="bg-gradient-to-r from-green-400 to-blue-500 h-3 rounded-full transition-all duration-500"
+                    style={{ width: `${xpProgress}%` }}
+                  />
+                </div>
+                <p className="text-xs text-white mt-1">{xp} / {xpToNextLevel} XP</p>
+              </div>
+            </div>
+
+            <div className="flex items-center space-x-6">
+              <div className="bg-white bg-opacity-20 rounded-xl px-6 py-3">
+                <div className="flex items-center space-x-2">
+                  <Star className="w-6 h-6 text-yellow-300 fill-yellow-300 animate-pulse" />
+                  <span className="text-2xl font-bold text-white">{coins}</span>
+                </div>
+                <p className="text-xs text-white text-opacity-80">Career Coins</p>
+              </div>
+              <div className="bg-white bg-opacity-20 rounded-xl px-6 py-3">
+                <div className="text-2xl font-bold text-white">{analysis?.careerReadiness || 0}%</div>
+                <p className="text-xs text-white text-opacity-80">Ready Score</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-12 gap-6">
+          <div className="col-span-3 space-y-4">
+            <div className="bg-white rounded-xl p-6 shadow-xl">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="font-bold text-gray-800">Daily Quests</h3>
+                <Flame className="w-5 h-5 text-orange-500" />
+              </div>
+              {dailyChallenges.map((challenge) => (
+                <div key={challenge.id} className="mb-3 p-3 bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg border border-blue-200">
+                  <div className="flex items-start space-x-3">
+                    <span className="text-2xl">{challenge.icon}</span>
+                    <div className="flex-1">
+                      <p className="text-sm font-medium text-gray-800">{challenge.title}</p>
+                      <div className="flex items-center mt-2">
+                        <Star className="w-4 h-4 text-yellow-500 fill-yellow-500 mr-1" />
+                        <span className="text-xs font-bold text-gray-600">+{challenge.reward}</span>
+                      </div>
+                    </div>
+                    {challenge.completed ? (
+                      <CheckCircle className="w-5 h-5 text-green-500" />
+                    ) : (
+                      <Lock className="w-5 h-5 text-gray-300" />
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="bg-white rounded-xl p-6 shadow-xl">
+              <h3 className="font-bold text-gray-800 mb-4">Achievements</h3>
+              <div className="grid grid-cols-2 gap-3">
+                {achievements.map((ach) => (
+                  <div
+                    key={ach.id}
+                    className={`p-3 rounded-lg text-center transition-all ${
+                      ach.unlocked
+                        ? 'bg-gradient-to-br from-yellow-100 to-orange-100 border-2 border-yellow-400'
+                        : 'bg-gray-100 opacity-50'
+                    }`}
+                  >
+                    <div className="text-3xl mb-1">{ach.icon}</div>
+                    <p className="text-xs font-medium text-gray-700">{ach.name}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="bg-white rounded-xl p-6 shadow-xl">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="font-bold text-gray-800">Resume History</h3>
+                <History className="w-5 h-5 text-purple-500" />
+              </div>
+              <div className="space-y-2">
+                {resumeHistory.slice(0, 5).map((resume) => (
+                  <div key={resume.id} className="p-3 bg-purple-50 rounded-lg border border-purple-200">
+                    <p className="text-xs font-semibold text-gray-800 truncate">{resume.name}</p>
+                    <div className="flex items-center justify-between mt-1">
+                      <span className="text-xs text-gray-500">{resume.uploadDate}</span>
+                      <span className="text-xs font-bold text-purple-600">{resume.score}%</span>
+                    </div>
+                  </div>
+                ))}
+                {resumeHistory.length === 0 && (
+                  <p className="text-xs text-gray-500 text-center py-4">No resumes yet</p>
+                )}
+              </div>
+            </div>
+          </div>
+
+          <div className="col-span-9 space-y-6">
+            <div className="bg-white rounded-xl shadow-xl p-8">
+              <div className="grid md:grid-cols-3 gap-6 mb-6">
+                <div className="col-span-1">
+                  <label className="block text-sm font-bold text-gray-700 mb-2">
+                    📄 Upload Resume
+                  </label>
+                  <div className="border-2 border-dashed border-purple-300 rounded-lg p-4 hover:border-purple-500 transition-colors bg-purple-50">
+                    <input
+                      type="file"
+                      accept=".pdf"
+                      onChange={handleFileUpload}
+                      className="hidden"
+                      id="resume-upload"
+                    />
+                    <label htmlFor="resume-upload" className="cursor-pointer block">
+                      <Upload className="w-8 h-8 text-purple-400 mx-auto mb-2" />
+                      <p className="text-xs text-gray-600 text-center">
+                        {file ? file.name : 'Click to upload'}
+                      </p>
+                    </label>
+                  </div>
+                </div>
+
+                <div className="col-span-1">
+                  <label className="block text-sm font-bold text-gray-700 mb-2">
+                    🎯 Career Path
+                  </label>
+                  <select
+                    value={careerPath}
+                    onChange={(e) => setCareerPath(e.target.value)}
+                    className="w-full p-3 border-2 border-purple-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  >
+                    <option value="">Select path...</option>
+                    {careerPaths.map((path) => (
+                      <option key={path} value={path}>{path}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="col-span-1">
+                  <label className="block text-sm font-bold text-gray-700 mb-2">
+                    🔗 Job Posting URL
+                  </label>
+                  <input
+                    type="text"
+                    value={jobUrl}
+                    onChange={(e) => setJobUrl(e.target.value)}
+                    placeholder="Paste job link..."
+                    className="w-full p-3 border-2 border-purple-200 rounded-lg focus:ring-2 focus:ring-purple-500"
+                  />
+                </div>
+              </div>
+
+              <button
+                onClick={analyzeResumeAndJob}
+                disabled={!file || !careerPath || loading}
+                className="w-full bg-gradient-to-r from-purple-600 to-blue-600 text-white py-4 px-6 rounded-xl font-bold hover:from-purple-700 hover:to-blue-700 disabled:from-gray-300 disabled:to-gray-400 disabled:cursor-not-allowed transition-all shadow-lg transform hover:scale-105"
+              >
+                {loading ? (
+                  <div className="flex items-center justify-center">
+                    <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white mr-2"></div>
+                    Analyzing with AI Magic...
+                  </div>
+                ) : (
+                  <div className="flex items-center justify-center">
+                    <Zap className="w-6 h-6 mr-2" />
+                    Generate Match Report
+                  </div>
+                )}
+              </button>
+            </div>
+
+            {analysis && (
+              <>
+                <div className="grid grid-cols-4 gap-4">
+                  <ScoreCard title="Overall Match" score={analysis.matchScores.overall} color="from-green-500 to-emerald-600" icon={Target} />
+                  <ScoreCard title="Technical Skills" score={analysis.matchScores.technical} color="from-blue-500 to-cyan-600" icon={Sparkles} />
+                  <ScoreCard title="Course Alignment" score={analysis.matchScores.courseAlignment} color="from-purple-500 to-pink-600" icon={BookOpen} />
+                  <ScoreCard title="ATS Score" score={analysis.matchScores.atsScore} color="from-orange-500 to-red-600" icon={TrendingUp} />
+                </div>
+
+                <div className="bg-white rounded-xl shadow-xl">
+                  <div className="flex border-b">
+                    <button
+                      onClick={() => setActiveTab('quickwins')}
+                      className={`flex-1 py-4 font-bold ${activeTab === 'quickwins' ? 'text-purple-600 border-b-4 border-purple-600' : 'text-gray-500'}`}
+                    >
+                      ⚡ Quick Wins
+                    </button>
+                    <button
+                      onClick={() => setActiveTab('courses')}
+                      className={`flex-1 py-4 font-bold ${activeTab === 'courses' ? 'text-purple-600 border-b-4 border-purple-600' : 'text-gray-500'}`}
+                    >
+                      📚 Courses
+                    </button>
+                    <button
+                      onClick={() => setActiveTab('job')}
+                      className={`flex-1 py-4 font-bold ${activeTab === 'job' ? 'text-purple-600 border-b-4 border-purple-600' : 'text-gray-500'}`}
+                    >
+                      🎯 Job Match
+                    </button>
+                  </div>
+
+                  <div className="p-6">
+
+                    {activeTab === 'quickwins' && (
+                      <div className="space-y-3">
+                        {analysis.recommendations.quickWins.map((item, idx) => {
+                          const isCompleted = completedQuickWins.includes(item.action);
+                          return (
+                            <button
+                              key={idx}
+                              onClick={() => !isCompleted && completeQuickWin(item.action, item.points)}
+                              disabled={isCompleted}
+                              className={`w-full text-left flex items-start p-4 rounded-lg border-l-4 transition-all transform hover:scale-102 ${
+                                isCompleted
+                                  ? 'bg-green-50 border-green-500 opacity-60'
+                                  : 'bg-gradient-to-r from-blue-50 to-cyan-50 border-blue-500 hover:shadow-lg cursor-pointer'
+                              }`}
+                            >
+                              {isCompleted ? (
+                                <CheckCircle className="w-6 h-6 text-green-600 mr-3 mt-0.5" />
+                              ) : (
+                                <Plus className="w-6 h-6 text-blue-600 mr-3 mt-0.5" />
+                              )}
+                              <div className="flex-1">
+                                <p className="text-gray-800 font-medium">{item.action}</p>
+                                <div className="flex items-center mt-2 space-x-3">
+                                  <span className={`text-xs font-bold px-3 py-1 rounded-full ${
+                                    isCompleted ? 'bg-green-200 text-green-800' : 'bg-blue-200 text-blue-800'
+                                  }`}>
+                                    +{item.points} points
+                                  </span>
+                                  <span className="text-xs text-gray-500">{item.category}</span>
+                                </div>
+                              </div>
+                              {!isCompleted && (
+                                <ArrowUp className="w-5 h-5 text-blue-600" />
+                              )}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    )}
+
+                    {activeTab === 'courses' && (
+                      <div className="space-y-4">
+                        {analysis.recommendations.courses.map((course, idx) => (
+                          <div key={idx} className="border-l-4 border-purple-500 pl-4 py-3 bg-purple-50 rounded-r-lg hover:shadow-md transition-shadow">
+                            <div className="flex items-start justify-between">
+                              <div className="flex-1">
+                                <div className="flex items-center space-x-2 mb-2">
+                                  <span className="bg-purple-200 text-purple-800 text-xs font-bold px-2 py-1 rounded">{course.id}</span>
+                                  <h3 className="font-bold text-lg text-gray-800">{course.name}</h3>
+                                </div>
+                                <p className="text-sm text-gray-600 mb-2">{course.reason}</p>
+                                <div className="flex items-center space-x-3">
+                                  <span className="text-xs text-gray-500">Prereqs: {course.prereqs.join(', ')}</span>
+                                </div>
+                              </div>
+                              <div className="text-right ml-4">
+                                <span className="inline-block px-4 py-2 bg-green-100 text-green-700 rounded-full text-sm font-bold mb-2">
+                                  +{course.impact} pts
+                                </span>
+                                <p className={`text-xs font-bold ${
+                                  course.priority === 'High' ? 'text-red-600' : 'text-yellow-600'
+                                }`}>
+                                  {course.priority} Priority
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    {activeTab === 'job' && (
+                      <div>
+                        <div className="bg-gradient-to-r from-purple-100 to-blue-100 rounded-lg p-6 mb-6">
+                          <h3 className="text-2xl font-bold text-gray-800 mb-2">{analysis.jobMatch.title}</h3>
+                          <p className="text-gray-600 mb-4">{analysis.jobMatch.company}</p>
+
+                          <div className="flex items-center">
+                            <div className="flex-1 bg-gray-200 rounded-full h-4">
+                              <div
+                                className="bg-gradient-to-r from-green-500 to-emerald-500 h-4 rounded-full flex items-center justify-end pr-2"
+                                style={{ width: `${analysis.jobMatch.matchPercentage}%` }}
+                              ></div>
+                            </div>
+                            <span className="ml-3 font-bold text-gray-800">
+                              {analysis.jobMatch.matchPercentage}% Match
+                            </span>
+                          </div>
+                        </div>
+
+                        <h4 className="font-bold text-gray-800 mb-2">Missing Skills</h4>
+                        <div className="flex flex-wrap gap-2 mb-6">
+                          {analysis.jobMatch.missingSkills.map((skill, idx) => (
+                            <span key={idx} className="px-3 py-1 bg-red-100 text-red-700 rounded-full text-xs font-bold">
+                              {skill}
+                            </span>
+                          ))}
+                        </div>
+
+                        <h4 className="font-bold text-gray-800 mb-2">Matching Skills</h4>
+                        <div className="flex flex-wrap gap-2">
+                          {analysis.jobMatch.matchingSkills.map((skill, idx) => (
+                            <span key={idx} className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-bold">
+                              {skill}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                  </div>
+                </div>
+              </>
+            )}
+
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default CMUCoursePlanner;
